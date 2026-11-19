@@ -10,7 +10,8 @@ import { getProduct } from '../data/products';
 import {
   defaultSurfaceForCategory,
   defaultSurfaceState,
-  surfaceById,
+  sanitizeSurfaceState,
+  surfaceAccepts,
   type SurfaceId,
   type SurfaceMaterialState,
   type SurfaceState,
@@ -77,9 +78,9 @@ export const useDesign = create<DesignStore>((set, get) => {
       if (!product) return null;
       const { selected, surfaces } = get();
       let target: SurfaceId | null = surface ?? null;
-      if (!target && selected && surfaceById[selected].accepts.includes(product.category)) target = selected;
-      if (!target) target = defaultSurfaceForCategory[product.category];
-      if (!surfaceById[target].accepts.includes(product.category)) return null;
+      if (!target && selected && surfaceAccepts(selected, product.category)) target = selected;
+      if (!target) target = defaultSurfaceForCategory(product.category);
+      if (!target || !surfaceAccepts(target, product.category)) return null;
       commit({ ...surfaces, [target]: { productId, scale: 1, rotation: surfaces[target].rotation } });
       return target;
     },
@@ -112,7 +113,8 @@ export const useDesign = create<DesignStore>((set, get) => {
     resetRoom: () => commit(defaultSurfaceState()),
     load: (surfaces, meta) =>
       set({
-        surfaces,
+        // saved designs may reference products that were since removed from the catalogue
+        surfaces: sanitizeSurfaceState(surfaces),
         past: [],
         future: [],
         selected: null,

@@ -20,7 +20,7 @@ import {
   wallGeometry,
   type Hole,
 } from './geometry';
-import { productById } from '../data/products';
+import { seedProducts } from '../data/seedProducts';
 import type { TextureSource } from '../types/catalog';
 
 const { W, D, H } = ROOM;
@@ -302,7 +302,8 @@ function Tree({ position, scale = 1, mats }: { position: [number, number, number
   );
 }
 
-const hedgeSource = productById['gr-forest-dense'].texture;
+// decorative textures come from the built-in starter set, so they never depend on catalogue edits
+const hedgeSource = seedProducts.find((p) => p.id === 'gr-forest-dense')!.texture;
 
 function Outside({ mats }: { mats: Mats }) {
   const terraceMat = useSurfaceMaterial('terrace');
@@ -497,7 +498,7 @@ const artB: TextureSource = {
   params: { bg: '#e7e1d5', c1: '#b69a70', c2: '#7c8574', c3: '#d7b9a0', c4: '#2f2e2b' },
   seed: 29,
 };
-const marbleSource = productById['wp-calacatta-veil'].texture;
+const marbleSource = seedProducts.find((p) => p.id === 'wp-calacatta-veil')!.texture;
 
 function Rug() {
   const m = useDecorMaterial('decor:rug', rugSource, { repeat: [1 / 0.35, 1 / 0.35], roughness: 1, bumpScale: 1.2 });

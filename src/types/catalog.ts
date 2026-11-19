@@ -1,6 +1,26 @@
 import type { GenParams, GeneratorId } from '../lib/textures/generators';
 
-export type CategoryId = 'wallpaper' | 'curtain' | 'flooring' | 'fabric' | 'grass' | 'panel';
+/** Category identifiers are managed in the admin panel (e.g. 'wallpaper', 'curtain'). */
+export type CategoryId = string;
+
+/**
+ * Where a category's materials can be used in the visualizers.
+ * - walls: the four room walls (3D) and "Wall" regions (photo)
+ * - floor / terrace: room floor and terrace floor (3D), "Floor" regions (photo)
+ * - curtains: curtains (3D and photo)
+ * - upholstery: sofa and accent chair (3D), "Sofa" regions (photo)
+ * - cushions: cushions (3D)
+ */
+export type Placement = 'walls' | 'floor' | 'terrace' | 'curtains' | 'upholstery' | 'cushions';
+
+export const PLACEMENTS: { id: Placement; label: string; hint: string }[] = [
+  { id: 'walls', label: 'Walls', hint: 'Wallpapers, panels, cladding' },
+  { id: 'floor', label: 'Room floor', hint: 'Flooring, rugs, grass' },
+  { id: 'terrace', label: 'Terrace / outdoor floor', hint: 'Grass, decking, tiles' },
+  { id: 'curtains', label: 'Curtains', hint: 'Curtain and sheer fabrics' },
+  { id: 'upholstery', label: 'Sofa & chair', hint: 'Upholstery fabrics, leather' },
+  { id: 'cushions', label: 'Cushions', hint: 'Fabrics for cushions' },
+];
 
 /**
  * Where a material's texture comes from.
@@ -10,7 +30,7 @@ export type CategoryId = 'wallpaper' | 'curtain' | 'flooring' | 'fabric' | 'gras
  */
 export type TextureSource =
   | { kind: 'procedural'; generator: GeneratorId; params: GenParams; seed?: number }
-  | { kind: 'image'; url: string; bumpUrl?: string };
+  | { kind: 'image'; url: string; bumpUrl?: string; /** set when made from the product photo in the admin panel */ fromPhoto?: boolean };
 
 export interface MaterialProperties {
   roughness: number;
@@ -51,6 +71,10 @@ export interface Product {
   tags: string[];
   specs: Record<string, string>;
   featured?: boolean;
+  /** Admin-only fields (the public site only ever receives published items). */
+  published?: boolean;
+  sortOrder?: number;
+  updatedAt?: string;
 }
 
 export type ColorFamily = 'Neutral' | 'Warm' | 'Cool' | 'Green' | 'Dark' | 'Pattern';
@@ -65,4 +89,9 @@ export interface Category {
   image: string;
   /** shown in the 3D visualizer catalogue */
   visualizerLabel: string;
+  /** where this category's materials can be applied in the visualizers */
+  placements: Placement[];
+  published?: boolean;
+  sortOrder?: number;
+  updatedAt?: string;
 }

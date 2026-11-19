@@ -46,7 +46,7 @@ export function productEnquiryMessage(product: Product, c?: CustomerDetails) {
   return [
     `Hello ${siteConfig.brandName}, I'm interested in this product:`,
     '',
-    `• ${product.name} (${categoryById[product.category].singular}, ref ${product.id})`,
+    `• ${product.name} (${categoryById[product.category]?.singular ?? 'Material'}, ref ${product.id})`,
     `${window.location.origin}/product/${product.id}`,
     '',
     'Could you share pricing and availability?',
@@ -81,7 +81,7 @@ export function designEnquiryMessage(d: DesignEnquiry, c?: CustomerDetails) {
     `Design type: ${d.designType}`,
     '',
     'Selected materials:',
-    ...d.items.map((i) => `• ${i.label}: ${i.product.name} (${categoryById[i.product.category].singular})`),
+    ...d.items.map((i) => `• ${i.label}: ${i.product.name} (${categoryById[i.product.category]?.singular ?? 'Finish'})`),
   ];
   if (d.areaNote) lines.push('', `Approx. area / sizes: ${d.areaNote}`);
   if (d.shareUrl) lines.push('', `View the design: ${d.shareUrl}`);

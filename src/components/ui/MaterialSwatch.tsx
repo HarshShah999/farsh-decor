@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { Product } from '../../types/catalog';
 import { getThumbnailUrl } from '../../lib/textures/textureService';
 
@@ -33,7 +33,12 @@ interface Props {
  * shown repeating, which is a truthful preview of how it covers a surface.
  */
 export function MaterialSwatch({ product, size = 256, className = '', tiles = 1, rounded = false }: Props) {
-  const url = useSwatch(product, size);
+  // A product photo (uploaded in the admin panel) is shown whole when not tiling;
+  // repeat previews always use the seamless texture.
+  const photo = tiles <= 1 ? product.thumbnail : undefined;
+  const textureOnly = useMemo(() => (product.thumbnail ? { ...product, thumbnail: undefined } : product), [product]);
+  const texUrl = useSwatch(photo ? undefined : textureOnly, size);
+  const url = photo ?? texUrl;
   const isSheer = (product.materialProperties.opacity ?? 1) < 1;
   return (
     <div
@@ -46,8 +51,9 @@ export function MaterialSwatch({ product, size = 256, className = '', tiles = 1,
           className="absolute inset-0 transition-transform duration-[900ms] ease-[var(--ease-lux)] group-hover:scale-[1.06]"
           style={{
             backgroundImage: `url(${url})`,
-            backgroundSize: `${100 / tiles}% auto`,
-            backgroundRepeat: 'repeat',
+            backgroundSize: photo ? 'cover' : `${100 / tiles}% auto`,
+            backgroundPosition: photo ? 'center' : undefined,
+            backgroundRepeat: photo ? 'no-repeat' : 'repeat',
             opacity: isSheer ? 0.85 : 1,
           }}
         />

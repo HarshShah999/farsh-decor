@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useDesign } from '../../store/designStore';
 import { SURFACES } from '../surfaces';
-import { getProduct } from '../../data/products';
+import { getProductOrPlain } from '../../data/products';
 import { categoryById } from '../../data/categories';
 import { MaterialSwatch } from '../../components/ui/MaterialSwatch';
 import { Button } from '../../components/ui/Button';
@@ -43,7 +43,7 @@ export function SummaryPanel({ onWhatsApp, onQuote, onSave, onShare }: Props) {
             <ul className="space-y-1">
               {SURFACES.filter((s) => s.group === group).map((s) => {
                 const st = surfaces[s.id];
-                const p = getProduct(st.productId)!;
+                const p = getProductOrPlain(st.productId);
                 const isSel = selected === s.id;
                 return (
                   <li key={s.id}>
@@ -69,7 +69,7 @@ export function SummaryPanel({ onWhatsApp, onQuote, onSave, onShare }: Props) {
                         >
                           <div className="space-y-3 px-2 pt-2 pb-3">
                             <p className="text-xs text-muted">
-                              {categoryById[p.category].singular} · {p.collection}
+                              {categoryById[p.category]?.singular ?? 'Finish'}{p.collection ? ` · ${p.collection}` : ''}
                             </p>
                             <label className="block">
                               <span className="flex justify-between text-[11px] text-muted">

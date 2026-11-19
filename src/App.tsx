@@ -15,11 +15,22 @@ import NotFoundPage from './pages/NotFoundPage';
 // Heavy, interactive tools are code-split and loaded on demand.
 const Visualizer3DPage = lazy(() => import('./pages/Visualizer3DPage'));
 const PhotoVisualizerPage = lazy(() => import('./pages/PhotoVisualizerPage'));
+// Admin panel: separate bundle, only downloaded when someone opens /admin.
+const AdminApp = lazy(() => import('./admin/AdminApp'));
 
 export default function App() {
   const location = useLocation();
   // Use the first path segment so nested query changes don't re-animate the page
   const pageKey = location.pathname;
+
+  if (location.pathname === '/admin' || location.pathname.startsWith('/admin/'))
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          <Route path="/admin/*" element={<AdminApp />} />
+        </Routes>
+      </Suspense>
+    );
 
   return (
     <MotionConfig reducedMotion="user">

@@ -64,6 +64,18 @@ export const siteConfig = {
 
   /** Public base URL used when building share links. Defaults to the current origin. */
   publicBaseUrl: '',
+
+  /**
+   * Supabase project that stores the catalogue (managed in the admin panel at /admin).
+   * The publishable key is designed to be public: Row Level Security in the database
+   * decides what it may do (read published items only). NEVER put the secret /
+   * service_role key here. Both values can be overridden with the
+   * VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY environment variables.
+   */
+  supabaseUrl: (import.meta.env.VITE_SUPABASE_URL as string | undefined) || 'https://aypntbedlzfqsidkcbhz.supabase.co',
+  supabasePublishableKey:
+    (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined) ||
+    'sb_publishable_nNIp1S-FE11IVVxUAgXhtA_tvSlWlCB',
 } as const;
 
 export type SiteConfig = typeof siteConfig;

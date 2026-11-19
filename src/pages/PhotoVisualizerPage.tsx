@@ -145,7 +145,7 @@ export default function PhotoVisualizerPage() {
   }, [st]);
 
   const items = regions
-    .filter((r) => r.productId && r.visible)
+    .filter((r) => r.visible && getProduct(r.productId))
     .map((r) => ({ label: r.name, product: getProduct(r.productId)! }));
 
   const caption = items.map((i) => i.product.name).slice(0, 4).join(' · ');

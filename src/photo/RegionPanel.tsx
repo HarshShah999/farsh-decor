@@ -52,7 +52,7 @@ function Slider({
 
 function RegionDetails({ region }: { region: PhotoRegion }) {
   const { updateRegion, deleteRegion, duplicateRegion, moveRegion } = usePhoto.getState();
-  const cats = surfaceCategories[region.surfaceType];
+  const cats = useMemo(() => surfaceCategories(region.surfaceType), [region.surfaceType]);
   const [cat, setCat] = useState<CategoryId | 'all'>('all');
   const list = useMemo(
     () => products.filter((p) => cats.includes(p.category) && (cat === 'all' || p.category === cat)),
@@ -83,7 +83,7 @@ function RegionDetails({ region }: { region: PhotoRegion }) {
             <button
               key={t}
               onClick={() => {
-                const keep = product && surfaceCategories[t].includes(product.category);
+                const keep = product && surfaceCategories(t).includes(product.category);
                 updateRegion(region.id, { surfaceType: t, productId: keep ? region.productId : null });
                 setCat('all');
               }}
@@ -108,7 +108,7 @@ function RegionDetails({ region }: { region: PhotoRegion }) {
                 onClick={() => setCat(c)}
                 className={`shrink-0 px-2 py-1 text-[10px] font-semibold tracking-[0.1em] uppercase ${cat === c ? 'bg-charcoal text-ivory' : 'text-muted hover:text-charcoal'}`}
               >
-                {c === 'all' ? 'All' : categoryById[c].visualizerLabel}
+                {c === 'all' ? 'All' : (categoryById[c]?.visualizerLabel ?? c)}
               </button>
             ))}
           </div>

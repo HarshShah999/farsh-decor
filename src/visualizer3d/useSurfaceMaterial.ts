@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { useFrame, useThree } from '@react-three/fiber';
-import { getProduct } from '../data/products';
+import { getProductOrPlain } from '../data/products';
 import { useDesign, useSurfaceProductId } from '../store/designStore';
 import type { SurfaceId } from './surfaces';
 import { acquireTexture, releaseTexture, type TexturePair } from './textureCache';
@@ -103,7 +103,7 @@ export function useSurfaceMaterial(surface: SurfaceId, opts: { side?: THREE.Side
   const selected = useDesign((s) => s.selected === surface);
   const hovered = useDesign((s) => s.hovered === surface);
   const invalidate = useThree((s) => s.invalidate);
-  const product = getProduct(productId)!;
+  const product = getProductOrPlain(productId);
 
   const material = useMemo(() => {
     const m = new THREE.MeshPhysicalMaterial({ color: '#d9d2c5', roughness: 0.9, side: opts.side ?? THREE.FrontSide });

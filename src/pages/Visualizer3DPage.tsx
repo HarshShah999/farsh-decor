@@ -14,7 +14,7 @@ import { ErrorBoundary } from '../components/ui/ErrorBoundary';
 import { IconButton, LinkButton, Button } from '../components/ui/Button';
 import { Icon, WhatsAppGlyph } from '../components/ui/Icon';
 import { SURFACES, surfaceById } from '../visualizer3d/surfaces';
-import { getProduct } from '../data/products';
+import { getProduct, getProductOrPlain } from '../data/products';
 import { decodeDesign, shareUrlFor3D } from '../lib/shareCodec';
 import { getDesign, newId, saveDesign } from '../lib/designStorage';
 import { downloadDataUrl, makePreview, stamp } from '../lib/imageUtils';
@@ -172,7 +172,7 @@ export default function Visualizer3DPage() {
     setTimeout(() => viewer.invalidate?.(), 100);
   };
 
-  const items = SURFACES.map((s) => ({ label: s.label, product: getProduct(surfaces[s.id].productId)! }));
+  const items = SURFACES.map((s) => ({ label: s.label, product: getProductOrPlain(surfaces[s.id].productId) }));
 
   const capture = useCallback(async () => {
     const url = await captureBranded(designName);

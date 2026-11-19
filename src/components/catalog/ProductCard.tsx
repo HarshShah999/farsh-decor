@@ -14,10 +14,10 @@ export function ProductCard({ product }: { product: Product }) {
         className="relative block aspect-[4/5] overflow-hidden bg-cream shadow-[var(--shadow-soft)] transition-shadow duration-500 group-hover:shadow-[var(--shadow-lift)]"
         aria-label={`View ${product.name}`}
       >
-        <MaterialSwatch product={product} className="absolute inset-0" tiles={product.category === 'flooring' ? 1 : 2} />
+        <MaterialSwatch product={product} className="absolute inset-0" tiles={product.thumbnail || product.category === 'flooring' ? 1 : 2} />
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal/35 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
         <span className="absolute top-3 left-3 bg-ivory/90 px-2.5 py-1 text-[10px] font-semibold tracking-[0.18em] text-charcoal uppercase backdrop-blur">
-          {cat.name}
+          {cat?.name}
         </span>
       </Link>
       <div className="flex flex-1 flex-col pt-5">

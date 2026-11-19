@@ -3,9 +3,9 @@ import { Modal } from '../../components/ui/Modal';
 import { Button } from '../../components/ui/Button';
 import { MaterialSwatch } from '../../components/ui/MaterialSwatch';
 import { Icon } from '../../components/ui/Icon';
-import { products, getProduct } from '../../data/products';
+import { getProductOrPlain as getProduct } from '../../data/products';
 import { useDesign } from '../../store/designStore';
-import { SURFACES, surfaceById, type SurfaceId } from '../surfaces';
+import { SURFACES, productsForSurface, surfaceById, type SurfaceId } from '../surfaces';
 import { preloadTexture } from '../textureCache';
 import { waitForApplied } from '../useSurfaceMaterial';
 import { nextFrames } from '../viewer';
@@ -34,7 +34,7 @@ export function CompareDialog({ open, onClose }: { open: boolean; onClose: () =>
     setShots(null);
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const candidates = products.filter((p) => surfaceById[surface].accepts.includes(p.category));
+  const candidates = productsForSurface(surface);
 
   const toggle = (id: string) =>
     setPicks((cur) => (cur.includes(id) ? cur.filter((x) => x !== id) : cur.length >= MAX ? cur : [...cur, id]));
@@ -45,7 +45,7 @@ export function CompareDialog({ open, onClose }: { open: boolean; onClose: () =>
     const out: { productId: string; url: string }[] = [];
     try {
       for (const id of picks) {
-        const p = getProduct(id)!;
+        const p = getProduct(id);
         await preloadTexture(p.id, p.texture);
         setPreview({ surface, productId: id });
         await waitForApplied(surface, id);
@@ -62,7 +62,7 @@ export function CompareDialog({ open, onClose }: { open: boolean; onClose: () =>
 
   const applyPick = (id: string) => {
     useDesign.getState().apply(id, surface);
-    toast(`${getProduct(id)!.name} applied`, 'success');
+    toast(`${getProduct(id).name} applied`, 'success');
     onClose();
   };
 
@@ -72,7 +72,7 @@ export function CompareDialog({ open, onClose }: { open: boolean; onClose: () =>
         <div>
           <div className={`grid gap-4 ${shots.length > 2 ? 'md:grid-cols-3' : shots.length === 2 ? 'md:grid-cols-2' : ''}`}>
             {shots.map((s) => {
-              const p = getProduct(s.productId)!;
+              const p = getProduct(s.productId);
               return (
                 <figure key={s.productId} className="bg-white shadow-[var(--shadow-soft)]">
                   <img src={s.url} alt={`Room with ${p.name}`} className="aspect-[4/3] w-full object-cover" />

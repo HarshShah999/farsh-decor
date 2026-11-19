@@ -3,7 +3,7 @@ import { products } from '../../data/products';
 import { categories, categoryById } from '../../data/categories';
 import type { CategoryId, ColorFamily, Product } from '../../types/catalog';
 import { useDesign } from '../../store/designStore';
-import { SURFACES, surfaceById, type SurfaceId } from '../surfaces';
+import { SURFACES, acceptedCategories, surfaceById, type SurfaceId } from '../surfaces';
 import { MaterialSwatch } from '../../components/ui/MaterialSwatch';
 import { Icon } from '../../components/ui/Icon';
 import { preloadTexture } from '../textureCache';
@@ -44,7 +44,9 @@ export function MaterialPanel({ layout = 'grid' }: { layout?: 'grid' | 'strip' }
   const surfaces = useDesign((s) => s.surfaces);
   const apply = useDesign((s) => s.apply);
   const select = useDesign((s) => s.select);
-  const allowed: CategoryId[] = selected ? surfaceById[selected].accepts : categories.map((c) => c.id);
+  const allowed: CategoryId[] = selected
+    ? acceptedCategories(selected)
+    : categories.filter((c) => c.placements.length).map((c) => c.id);
   const [cat, setCat] = useState<CategoryId>(allowed[0]);
   const [q, setQ] = useState('');
   const [tone, setTone] = useState<ColorFamily | 'all'>('all');
@@ -109,7 +111,7 @@ export function MaterialPanel({ layout = 'grid' }: { layout?: 'grid' | 'strip' }
             cat === c && !q ? 'bg-charcoal text-ivory' : 'text-muted hover:bg-charcoal/5 hover:text-charcoal'
           }`}
         >
-          {categoryById[c].visualizerLabel}
+          {categoryById[c]?.visualizerLabel ?? c}
         </button>
       ))}
     </div>

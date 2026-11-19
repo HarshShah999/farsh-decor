@@ -2,7 +2,8 @@ import { create } from 'zustand';
 import type { PhotoRegion, PhotoSurfaceType, Pt } from './types';
 import { defaultQuadFor } from './homography';
 import { getProduct } from '../data/products';
-import type { CategoryId } from '../types/catalog';
+import { categories } from '../data/categories';
+import type { CategoryId, Placement } from '../types/catalog';
 
 export type Tool = 'select' | 'draw' | 'wand' | 'pan';
 
@@ -13,13 +14,22 @@ export interface PhotoImage {
   height: number;
 }
 
-export const surfaceCategories: Record<PhotoSurfaceType, CategoryId[]> = {
-  wall: ['wallpaper', 'panel'],
-  floor: ['flooring', 'grass'],
-  curtain: ['curtain'],
-  sofa: ['fabric'],
-  other: ['wallpaper', 'panel', 'flooring', 'grass', 'curtain', 'fabric'],
+/** Which category placements suit each photo surface type ('other' accepts everything). */
+const photoPlacements: Record<PhotoSurfaceType, Placement[] | null> = {
+  wall: ['walls'],
+  floor: ['floor', 'terrace'],
+  curtain: ['curtains'],
+  sofa: ['upholstery'],
+  other: null,
 };
+
+/** Categories that can be applied to a photo surface type, in catalogue order. */
+export function surfaceCategories(type: PhotoSurfaceType): CategoryId[] {
+  const allowed = photoPlacements[type];
+  return categories
+    .filter((c) => (allowed ? c.placements.some((p) => allowed.includes(p)) : true))
+    .map((c) => c.id);
+}
 
 export const surfaceLabels: Record<PhotoSurfaceType, string> = {
   wall: 'Wall',
@@ -124,7 +134,7 @@ export const usePhoto = create<PhotoStore>((set, get) => {
       let productId: string | null = null;
       if (pending) {
         const p = getProduct(pending);
-        if (p && surfaceCategories[type].includes(p.category)) productId = pending;
+        if (p && surfaceCategories(type).includes(p.category)) productId = pending;
       }
       const region: PhotoRegion = {
         id,

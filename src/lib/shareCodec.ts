@@ -6,8 +6,7 @@
  * Only product IDs and per-surface scale/rotation are encoded, so links stay short.
  */
 import { siteConfig } from '../config/site';
-import { productById } from '../data/products';
-import { SURFACES, defaultSurfaceState, type SurfaceState } from '../visualizer3d/surfaces';
+import { SURFACES, sanitizeSurfaceState, type SurfaceMaterialState, type SurfaceState } from '../visualizer3d/surfaces';
 
 type Compact = { v: 1; s: Record<string, [string, number?, number?]> };
 
@@ -42,18 +41,14 @@ export function decodeDesign(encoded: string): SurfaceState | null {
   try {
     const c = JSON.parse(b64urlDecode(encoded)) as Compact;
     if (c.v !== 1 || typeof c.s !== 'object') return null;
-    const state = defaultSurfaceState();
+    const raw: Record<string, Partial<SurfaceMaterialState>> = {};
     for (const def of SURFACES) {
       const e = c.s[def.id];
-      if (!e || !productById[e[0]]) continue;
-      if (!def.accepts.includes(productById[e[0]].category)) continue;
-      state[def.id] = {
-        productId: e[0],
-        scale: typeof e[1] === 'number' ? Math.min(3, Math.max(0.25, e[1])) : 1,
-        rotation: e[2] === 90 ? 90 : 0,
-      };
+      if (!Array.isArray(e) || typeof e[0] !== 'string') continue;
+      raw[def.id] = { productId: e[0], scale: typeof e[1] === 'number' ? e[1] : 1, rotation: e[2] === 90 ? 90 : 0 };
     }
-    return state;
+    // unknown / deleted products fall back to each surface's default
+    return sanitizeSurfaceState(raw);
   } catch {
     return null;
   }

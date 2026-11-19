@@ -19,6 +19,47 @@ npm run preview    # serve the production build
 
 ---
 
+## Admin panel (`/admin`)
+
+Owners manage the catalogue at **`/admin`**: create, edit, reorder, hide and delete categories; add, edit, hide and delete
+products (title, descriptions, photos, price, availability, specs, featured); upload photos (resized and compressed in the
+browser). Changes appear on the website on the next page load, with no redeploy.
+
+Data lives in **Supabase** (database + photo storage + login). Only accounts listed in the `admins` table can change anything.
+This is enforced by Row Level Security in the database, not just by hiding the page, so it also holds for direct API calls.
+
+### One-time setup
+
+1. **Create the database**: Supabase dashboard → *SQL Editor* → *New query* → paste all of [`supabase/setup.sql`](supabase/setup.sql) → *Run*.
+2. **Turn off public sign-ups**: *Authentication* → *Sign In / Providers* → switch off *Allow new users to sign up*.
+3. **Create your login**: *Authentication* → *Users* → *Add user* → *Create new user* (tick *Auto Confirm User*).
+4. **Make it an admin**: edit the email in [`supabase/add-admin.sql`](supabase/add-admin.sql), paste it into the SQL Editor, *Run*.
+5. **Password-reset links**: *Authentication* → *URL Configuration* → set *Site URL* to your live address
+   (e.g. `https://your-site.vercel.app`) and add `https://your-site.vercel.app/admin/login` and
+   `http://localhost:5173/admin/login` to *Redirect URLs*.
+6. Open `/admin`, sign in, and click **Import starter catalogue** to copy the 40 starter products into the database
+   (or start from scratch with *New category*).
+
+The Supabase URL and **publishable** key are in `src/config/site.ts` (override with `VITE_SUPABASE_URL` /
+`VITE_SUPABASE_PUBLISHABLE_KEY`). Never put the `service_role` / secret key in the code.
+
+### How the site uses the data
+
+- `src/lib/catalogLoader.ts` fetches published categories and products before the first render, caches the last good copy in
+  the browser, and falls back to the built-in starter catalogue (`src/data/seed*.ts`) if Supabase is unreachable or still empty.
+- Each category's **visualizer placements** (walls, room floor, terrace, curtains, sofa & chair, cushions) decide where its
+  products can be tried in the 3D and photo visualizers, so new categories work there automatically.
+- Saved designs and share links that refer to a deleted product fall back to a suitable product for that surface.
+- Backups: *Dashboard → Download backup* saves the whole catalogue as JSON. The free Supabase plan has no automatic backups and
+  pauses after a week without traffic.
+
+### Hosting on Vercel
+
+`vercel.json` already rewrites all routes to `index.html` and sends `noindex` headers for `/admin`. Import the repository in
+Vercel (framework preset *Vite*); no environment variables are required.
+
+---
+
 ## Before launch: things to replace
 
 | What | Where |
@@ -27,7 +68,7 @@ npm run preview    # serve the production build
 | Form delivery endpoint (Formspree, a serverless function, CRM…) | `siteConfig.formEndpoint` |
 | Brand story details (founding year, team, partners) | `src/pages/AboutPage.tsx` |
 | Testimonials (currently labelled *sample*) | `src/pages/HomePage.tsx` → `testimonials` |
-| Prices (currently “Price on request”) | `price` on each product in `src/data/products.ts` |
+| Products, photos and prices | the admin panel at `/admin` |
 | Photography (Unsplash placeholders) | `public/images/` (keep the file names or update references) |
 
 ---
@@ -37,8 +78,10 @@ npm run preview    # serve the production build
 ```
 src/
   config/site.ts           Central business configuration (no details hard-coded elsewhere)
-  data/categories.ts       6 categories
-  data/products.ts         Single product catalogue (40 products) used by EVERY feature
+  admin/                   Admin panel (/admin): sign-in, dashboard, product & category editors, uploads
+  data/categories.ts       Live categories (loaded from Supabase)
+  data/products.ts         Live product catalogue used by EVERY feature (loaded from Supabase)
+  data/seed*.ts            Built-in starter catalogue (offline fallback + one-click import)
   types/catalog.ts         Product / texture / material types
   lib/
     textures/              Seamless procedural texture engine
@@ -75,9 +118,11 @@ src/
 
 ### One catalogue, four consumers
 
-`src/data/products.ts` is the only product source. The homepage, collection pages, product pages, the 3D visualizer and the photo visualizer all read from it.
+`src/data/products.ts` (filled from Supabase at startup) is the only product source. The homepage, collection pages, product pages, the 3D visualizer and the photo visualizer all read from it.
 
-### Adding a real showroom product
+### Adding a product in code (starter catalogue only)
+
+Real products are added in the admin panel. Entries in `src/data/seedProducts.ts` only affect the offline fallback and the "Import starter catalogue" button:
 
 ```ts
 p({
